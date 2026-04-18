@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SnapAI — KI Produktfotos</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--cream:#F7F3ED;--dark:#1A1714;--accent:#C8512A;--muted:#8C8279;--surface:#EDE8DF;--white:#fff;}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Inter',sans-serif;background:var(--cream);color:var(--dark);min-height:100vh;}
+@keyframes spin{to{transform:rotate(360deg);}}
+@keyframes up{from{opacity:0;transform:translateY(12px);}to{opacity:1;transform:none;}}
+nav{background:var(--dark);padding:16px 28px;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:100;}
+.logo{font-family:'Playfair Display',serif;font-size:22px;font-weight:700;color:#F5F0E8;}
+.logo em{color:var(--accent);font-style:italic;}
+.nav-tag{font-size:10px;color:rgba(245,240,232,.35);letter-spacing:.12em;text-transform:uppercase;}
+.wrap{max-width:900px;margin:0 auto;padding:40px 18px 64px;}
+h1{font-family:'Playfair Display',serif;font-size:clamp(26px,4vw,40px);font-weight:700;line-height:1.15;margin-bottom:10px;}
+h1 em{color:var(--accent);font-style:italic;font-weight:400;}
+.sub{color:var(--muted);font-size:14px;line-height:1.65;margin-bottom:36px;max-width:520px;font-weight:300;}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;}
+@media(max-width:600px){.grid{grid-template-columns:1fr;}}
+.card{background:var(--white);border:1px solid rgba(26,23,20,.08);padding:24px;border-radius:8px;}
+.step-num{font-family:'Playfair Display',serif;font-size:36px;font-weight:300;color:rgba(26,23,20,.09);line-height:1;margin-bottom:4px;}
+.card-title{font-size:17px;font-weight:700;margin-bottom:4px;}
+.card-desc{font-size:12px;color:var(--muted);line-height:1.6;margin-bottom:16px;font-weight:300;}
+.dz{border:2px dashed rgba(26,23,20,.15);padding:22px 14px;text-align:center;cursor:pointer;background:var(--cream);border-radius:6px;transition:all .2s;position:relative;}
+.dz:hover,.dz.over{border-color:var(--accent);background:rgba(200,81,42,.04);}
+.dz input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;}
+.dz-icon{font-size:24px;margin-bottom:5px;}
+.dz-text{font-size:12px;color:var(--muted);}
+.dz-text b{color:var(--dark);}
+.thumbs{display:flex;flex-wrap:wrap;gap:8px;margin-top:11px;}
+.tw{position:relative;display:inline-block;}
+.tw img{width:62px;height:62px;object-fit:cover;border-radius:4px;display:block;}
+.td{position:absolute;top:-5px;right:-5px;background:var(--accent);color:#fff;border:none;border-radius:50%;width:16px;height:16px;font-size:10px;cursor:pointer;font-weight:700;display:flex;align-items:center;justify-content:center;}
+.style-label{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;margin:18px 0 8px;}
+.style-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;}
+.sb{border:1.5px solid rgba(26,23,20,.12);background:var(--cream);padding:9px 10px;cursor:pointer;text-align:left;border-radius:5px;font-family:inherit;transition:all .15s;width:100%;}
+.sb:hover{border-color:var(--dark);}
+.sb.active{border-color:var(--accent);background:rgba(200,81,42,.06);}
+.sb .sn{font-size:12px;font-weight:600;color:var(--dark);display:block;}
+.sb .sd{font-size:10px;color:var(--muted);}
+.gen-bar{background:var(--dark);padding:18px 22px;display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;margin-bottom:22px;border-radius:8px;}
+.checks{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:4px;}
+.chk{font-size:12px;}
+.chk.ok{color:#7BC67E;}.chk.no{color:rgba(245,240,232,.3);}
+.gen-hint{font-size:11px;color:rgba(245,240,232,.4);}
+.btn-gen{background:var(--accent);color:#fff;border:none;padding:13px 26px;font-family:inherit;font-size:14px;font-weight:600;border-radius:5px;cursor:pointer;white-space:nowrap;transition:opacity .2s;}
+.btn-gen:disabled{opacity:.32;cursor:not-allowed;}
+.btn-gen:not(:disabled):hover{opacity:.88;}
+.loading{display:none;text-align:center;padding:52px 24px;background:var(--white);border:1px solid rgba(26,23,20,.08);border-radius:8px;margin-bottom:22px;}
+.loading.show{display:block;animation:up .3s ease;}
+.spinner{width:40px;height:40px;border:3px solid rgba(26,23,20,.08);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 16px;}
+.loading h3{font-family:'Playfair Display',serif;font-size:24px;font-weight:400;margin-bottom:6px;}
+.loading p{font-size:13px;color:var(--muted);margin-bottom:16px;}
+.prog{width:200px;height:3px;background:rgba(26,23,20,.08);margin:0 auto;border-radius:2px;}
+.prog-fill{height:100%;background:var(--accent);border-radius:2px;transition:width .6s;}
+.err{display:none;background:rgba(200,81,42,.08);border:1px solid rgba(200,81,42,.2);padding:14px 18px;font-size:13px;color:#9b3a1e;border-radius:5px;line-height:1.6;margin-bottom:18px;}
+.err.show{display:block;}
+.results{display:none;animation:up .4s ease;}
+.results.show{display:block;}
+.res-title{font-family:'Playfair Display',serif;font-size:28px;font-weight:700;margin-bottom:16px;}
+.img-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;margin-bottom:24px;}
+@media(max-width:500px){.img-grid{grid-template-columns:1fr;}}
+.img-card{background:var(--white);border:1px solid rgba(26,23,20,.08);border-radius:8px;overflow:hidden;}
+.img-card img{width:100%;aspect-ratio:3/4;object-fit:cover;display:block;}
+.img-card .img-label{padding:10px 14px;display:flex;justify-content:space-between;align-items:center;border-top:1px solid rgba(26,23,20,.06);}
+.img-card .lbl{font-size:12px;font-weight:600;color:var(--dark);}
+.dl-btn{background:var(--dark);color:var(--cream);border:none;padding:6px 14px;font-family:inherit;font-size:11px;font-weight:600;border-radius:3px;cursor:pointer;text-decoration:none;display:inline-block;}
+.dl-btn:hover{background:var(--accent);}
+.style-box{background:var(--surface);border:1px solid rgba(26,23,20,.08);padding:13px 16px;border-radius:5px;font-size:13px;color:#5c5248;line-height:1.7;margin-bottom:16px;font-style:italic;}
+.style-box strong{font-style:normal;color:var(--dark);}
+</style>
+</head>
+<body>
+<nav>
+  <div class="logo">Snap<em>AI</em></div>
+  <div class="nav-tag">KI Produktfoto Generator</div>
+</nav>
+<div class="wrap">
+  <h1>Produktfotos auf<br><em>Studio-Niveau</em> — mit KI</h1>
+  <p class="sub">Referenzbilder + Produktfoto hochladen → KI generiert echte professionelle Produktfotos im gleichen Stil.</p>
+  <div class="grid">
+    <div class="card">
+      <div class="step-num">01</div>
+      <div class="card-title">Referenzbilder</div>
+      <p class="card-desc">1–4 Fotos im gewünschten Stil. KI analysiert Licht, Hintergrund & Stimmung.</p>
+      <div class="dz" id="refZone">
+        <input type="file" accept="image/jpeg,image/png,image/webp" multiple id="refInput"/>
+        <div class="dz-icon">🖼️</div>
+        <div class="dz-text"><b>Klicken oder reinziehen</b><br>Max. 4 Fotos · JPG / PNG / WEBP</div>
+      </div>
+      <div class="thumbs" id="refThumbs"></div>
+    </div>
+    <div class="card">
+      <div class="step-num">02</div>
+      <div class="card-title">Dein Produkt</div>
+      <p class="card-desc">Produktfoto hochladen. Hintergrund egal — KI ersetzt ihn komplett.</p>
+      <div class="dz" id="prodZone">
+        <input type="file" accept="image/jpeg,image/png,image/webp" id="prodInput"/>
+        <div class="dz-icon">📦</div>
+        <div class="dz-text"><b>Produktfoto hochladen</b><br>1 Foto · JPG / PNG / WEBP</div>
+      </div>
+      <div class="thumbs" id="prodThumbs"></div>
+      <div class="style-label">Stil-Richtung</div>
+      <div class="style-grid" id="styleGrid">
+        <button class="sb active" data-style="auto"><span class="sn">Auto (von Referenz)</span><span class="sd">KI erkennt Stil selbst</span></button>
+        <button class="sb" data-style="minimal"><span class="sn">Minimal Studio</span><span class="sd">Clean, hell, professionell</span></button>
+        <button class="sb" data-style="nature"><span class="sn">Nature & Organic</span><span class="sd">Blätter, Steine, Natur</span></button>
+        <button class="sb" data-style="luxury"><span class="sn">Luxury Dark</span><span class="sd">Dunkel, edel, dramatisch</span></button>
+        <button class="sb" data-style="lifestyle"><span class="sn">Lifestyle</span><span class="sd">Im echten Einsatz</span></button>
+      </div>
+    </div>
+  </div>
+  <div class="gen-bar">
+    <div>
+      <div class="checks">
+        <span class="chk no" id="chkRef">⬜ Referenzbilder</span>
+        <span class="chk no" id="chkProd">⬜ Produktfoto</span>
+      </div>
+      <div class="gen-hint" id="genHint">Bitte Bilder hochladen</div>
+    </div>
+    <button class="btn-gen" id="genBtn" disabled onclick="generate()">🪄 Produktfotos generieren</button>
+  </div>
+  <div class="err" id="errBox"></div>
+  <div class="loading" id="loadBox">
+    <div class="spinner"></div>
+    <h3 id="loadTitle">KI analysiert…</h3>
+    <p id="loadStep">Bitte warten, das dauert ca. 30 Sekunden</p>
+    <div class="prog"><div class="prog-fill" id="progFill" style="width:0%"></div></div>
+  </div>
+  <div class="results" id="resultsBox">
+    <div class="res-title">✦ Deine Produktfotos</div>
+    <div class="style-box" id="styleBox"></div>
+    <div class="img-grid" id="imgGrid"></div>
+  </div>
+</div>
+
+<script>
+let refs = [], prod = null, style = "auto";
+
+// Compress image to max 800px and JPEG quality 0.7
+function compressImage(file, maxSize=800) {
+  return new Promise(res => {
+    const img = new Image();
+    const url = URL.createObjectURL(file);
+    img.onload = () => {
+      const canvas = document.createElement("canvas");
+      let w = img.width, h = img.height;
+      if (w > maxSize || h > maxSize) {
+        if (w > h) { h = Math.round(h * maxSize / w); w = maxSize; }
+        else { w = Math.round(w * maxSize / h); h = maxSize; }
+      }
+      canvas.width = w; canvas.height = h;
+      canvas.getContext("2d").drawImage(img, 0, 0, w, h);
+      const dataUrl = canvas.toDataURL("image/jpeg", 0.75);
+      URL.revokeObjectURL(url);
+      res({ mime: "image/jpeg", data: dataUrl.split(",")[1], src: dataUrl });
+    };
+    img.src = url;
+  });
+}
+
+function thumb(src, onDel) {
+  const w = document.createElement("div"); w.className = "tw";
+  const img = document.createElement("img"); img.src = src;
+  const btn = document.createElement("button"); btn.className = "td"; btn.textContent = "×";
+  btn.onclick = onDel; w.appendChild(img); w.appendChild(btn); return w;
+}
+
+async function handleRefs(files) {
+  for (const f of Array.from(files)) {
+    if (refs.length >= 4) break;
+    const obj = await compressImage(f);
+    refs.push(obj);
+    const el = thumb(obj.src, () => { refs = refs.filter(r => r !== obj); el.remove(); upd(); });
+    document.getElementById("refThumbs").appendChild(el);
+  }
+  upd();
+}
+
+async function handleProd(files) {
+  if (!files[0]) return;
+  prod = await compressImage(files[0], 1024);
+  const c = document.getElementById("prodThumbs"); c.innerHTML = "";
+  const el = thumb(prod.src, () => { prod = null; c.innerHTML = ""; upd(); });
+  c.appendChild(el); upd();
+}
+
+document.getElementById("refInput").onchange = e => { handleRefs(e.target.files); e.target.value = ""; };
+document.getElementById("prodInput").onchange = e => { handleProd(e.target.files); e.target.value = ""; };
+
+["refZone","prodZone"].forEach(id => {
+  const z = document.getElementById(id);
+  z.addEventListener("dragover", e => { e.preventDefault(); z.classList.add("over"); });
+  z.addEventListener("dragleave", () => z.classList.remove("over"));
+  z.addEventListener("drop", e => {
+    e.preventDefault(); z.classList.remove("over");
+    if (id === "refZone") handleRefs(e.dataTransfer.files);
+    else handleProd(e.dataTransfer.files);
+  });
+});
+
+document.getElementById("styleGrid").addEventListener("click", e => {
+  const btn = e.target.closest(".sb"); if (!btn) return;
+  document.querySelectorAll(".sb").forEach(b => b.classList.remove("active"));
+  btn.classList.add("active"); style = btn.dataset.style;
+});
+
+function upd() {
+  const hR = refs.length > 0, hP = !!prod;
+  const cr = document.getElementById("chkRef"), cp = document.getElementById("chkProd");
+  cr.textContent = hR ? `✅ ${refs.length} Referenz${refs.length>1?"bilder":"bild"}` : "⬜ Referenzbilder";
+  cr.className = "chk " + (hR ? "ok" : "no");
+  cp.textContent = hP ? "✅ Produktfoto" : "⬜ Produktfoto";
+  cp.className = "chk " + (hP ? "ok" : "no");
+  document.getElementById("genBtn").disabled = !(hR && hP);
+  document.getElementById("genHint").textContent = (hR && hP) ? "Alles bereit — klicke Generieren!" : "Bitte Bilder hochladen";
+}
+
+function setProgress(pct, title, step) {
+  document.getElementById("progFill").style.width = pct + "%";
+  if (title) document.getElementById("loadTitle").textContent = title;
+  if (step) document.getElementById("loadStep").textContent = step;
+}
+
+async function generate() {
+  document.getElementById("errBox").classList.remove("show");
+  document.getElementById("resultsBox").classList.remove("show");
+  document.getElementById("loadBox").classList.add("show");
+  document.getElementById("genBtn").disabled = true;
+  setProgress(5, "KI analysiert…", "Bilder werden komprimiert & verarbeitet");
+
+  try {
+    setProgress(15, "Claude analysiert Bilder…", "Stil wird erkannt — bitte warten");
+
+    const analyzeRes = await fetch("/api/analyze", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        refs: refs.map(r => ({ mime: r.mime, data: r.data })),
+        prod: { mime: prod.mime, data: prod.data },
+        style
+      })
+    });
+
+    const analyzeData = await analyzeRes.json();
+    if (!analyzeRes.ok) throw new Error(analyzeData.error || "Analyse fehlgeschlagen");
+    if (!analyzeData.prompt) throw new Error("Kein Prompt generiert");
+
+    setProgress(45, "Bilder werden generiert…", "KI erstellt Bild 1/2 — ca. 20 Sekunden");
+
+    // Generate image 1
+    const img1Res = await fetch("/api/generate-image", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        prompt: analyzeData.prompt + " Centered front view, straight on angle.",
+        productImageBase64: prod.data,
+        productImageMime: prod.mime
+      })
+    });
+    const img1Data = await img1Res.json();
+    if (!img1Res.ok) throw new Error(img1Data.error || "Bildgenerierung 1 fehlgeschlagen");
+
+    setProgress(75, "Fast fertig…", "KI erstellt Bild 2/2");
+
+    // Generate image 2
+    const img2Res = await fetch("/api/generate-image", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        prompt: analyzeData.prompt + " 3/4 angle, slightly elevated perspective.",
+        productImageBase64: prod.data,
+        productImageMime: prod.mime
+      })
+    });
+    const img2Data = await img2Res.json();
+    if (!img2Res.ok) throw new Error(img2Data.error || "Bildgenerierung 2 fehlgeschlagen");
+
+    setProgress(100, "Fertig! 🎉", "Deine Produktfotos sind bereit");
+    await new Promise(r => setTimeout(r, 400));
+
+    document.getElementById("loadBox").classList.remove("show");
+    document.getElementById("resultsBox").classList.add("show");
+    document.getElementById("styleBox").innerHTML =
+      `<strong>✦ Erkannter Stil:</strong> ${analyzeData.styleAnalysis || ""}`;
+
+    const grid = document.getElementById("imgGrid");
+    grid.innerHTML = "";
+    [{ label: "Front View", url: img1Data.imageUrl }, { label: "3/4 Angle", url: img2Data.imageUrl }]
+      .forEach(({ label, url }) => {
+        const card = document.createElement("div");
+        card.className = "img-card";
+        card.innerHTML = `
+          <img src="${url}" alt="${label}" loading="lazy"/>
+          <div class="img-label">
+            <span class="lbl">${label}</span>
+            <a class="dl-btn" href="${url}" download="snapai-${label.replace(/ /g,"-").toLowerCase()}.jpg" target="_blank">↓ Download</a>
+          </div>`;
+        grid.appendChild(card);
+      });
+
+  } catch (e) {
+    document.getElementById("loadBox").classList.remove("show");
+    const eb = document.getElementById("errBox");
+    eb.innerHTML = `❌ <strong>Fehler:</strong> ${e.message}`;
+    eb.classList.add("show");
+  }
+  document.getElementById("genBtn").disabled = false;
+}
+</script>
+</body>
+</html>
